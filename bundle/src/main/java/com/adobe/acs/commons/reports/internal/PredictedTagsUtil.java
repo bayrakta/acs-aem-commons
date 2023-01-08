@@ -9,21 +9,24 @@ import org.apache.sling.api.resource.Resource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 public class PredictedTagsUtil {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PredictedTagsUtil.class);
+
+    public static final double MINIMUM_LOWER_CONFIDENCE_THRESHOLD_VALUE = 0.0;
 
     private PredictedTagsUtil() {
         throw new IllegalStateException("Utility class");
     }
 
     public static List<PredictedTag> getPredictedTags(final Resource resource,
-                                                      final String relativePropertyPath) {
+                                                      final String relativePropertyPath,
+                                                      final Double lowerConfidenceThreshold) {
+
+        double validatedLowerConfidenceValue = validateLowerConfidenceThreshold(lowerConfidenceThreshold);
+
         if (resource == null) {
             LOGGER.error("getPredictedTags : The given resource is null, hence returning empty list.");
             return Collections.emptyList();
@@ -45,8 +48,18 @@ public class PredictedTagsUtil {
         while (predicateTagResourcesIterator.hasNext()) {
             final Resource predicateTagResource = predicateTagResourcesIterator.next();
             final PredictedTag predictedTag = predicateTagResource.adaptTo(PredictedTag.class);
-            predictedTags.add(predictedTag);
+            if (predictedTag != null && (predictedTag.getConfidence() >= validatedLowerConfidenceValue)) {
+                predictedTags.add(predictedTag);
+            }
         }
+
+        // sort predicted tags by confidence (desc)
+        predictedTags.sort((p1, p2) -> {
+            double p1Confidence = p1 != null ? p1.getConfidence() : 0.0;
+            double p2Confidence = p2 != null ? p2.getConfidence() : 0.0;
+            // invert order: elements with highest confidence go first
+            return -Double.compare(p1Confidence, p2Confidence);
+        });
 
         LOGGER.debug("getPredictedTags : Loaded predictedTags {}.", predictedTags);
         return predictedTags;
@@ -64,4 +77,9 @@ public class PredictedTagsUtil {
         return predictedTagsResource;
     }
 
+    public static double validateLowerConfidenceThreshold(Double lowerConfidenceThresholdValue) {
+        return lowerConfidenceThresholdValue != null ?
+                lowerConfidenceThresholdValue :
+                MINIMUM_LOWER_CONFIDENCE_THRESHOLD_VALUE;
+    }
 }

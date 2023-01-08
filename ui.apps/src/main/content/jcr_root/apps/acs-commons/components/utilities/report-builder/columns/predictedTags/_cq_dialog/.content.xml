@@ -28,6 +28,23 @@
                             name="./property"
                             required="{Boolean}true"
                             emptyText="e.g., jcr:content/metadata/predictedTags"/>
+                    <lowerConfidenceThreshold
+                            jcr:primaryType="nt:unstructured"
+                            sling:resourceType="granite/ui/components/coral/foundation/form/numberfield"
+                            fieldLabel="Lower Confidence Threshold"
+                            fieldDescription="Omit all predicted tags whose confidence is lower than this value"
+                            name="./lowerConfidenceThreshold"
+                            value="{Double}0.0"
+                            min="{Double}0.0"
+                            max="{Double}1.0"
+                            step="any"
+                            required="{Boolean}true"
+                            emptyText="A double value between 0.0 (no filtering) and 1.0 (all values are filtered)"/>
+                    <lowerConfidenceThreshold-typehint
+                            jcr:primaryType="nt:unstructured"
+                            sling:resourceType="granite/ui/components/coral/foundation/form/hidden"
+                            name="./lowerConfidenceThreshold@TypeHint"
+                            value="Double"/>
                     <exporter
                             jcr:primaryType="nt:unstructured"
                             sling:resourceType="granite/ui/components/foundation/form/hidden"

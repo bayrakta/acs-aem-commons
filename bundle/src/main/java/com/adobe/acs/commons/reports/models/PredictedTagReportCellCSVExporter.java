@@ -7,6 +7,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.models.annotations.Model;
+import org.apache.sling.models.annotations.Optional;
 
 import javax.inject.Inject;
 import java.util.ArrayList;
@@ -18,25 +19,43 @@ import java.util.List;
 @Model(adaptables = Resource.class)
 public class PredictedTagReportCellCSVExporter implements ReportCellCSVExporter {
 
+    public static final String EMPTY_STRING = "";
+    public static final String CONFIDENCE_BRACKET_OPEN = "[";
+    public static final String CONFIDENCE_BRACKET_CLOSE = "]";
+    public static final String VALUE_SEPARATOR = ";";
+
     @Inject
     private String property;
+    @Inject @Optional
+    private Double lowerConfidenceThreshold;
 
     @Override
     public String getValue(final Object result) {
         final Resource resource = (Resource) result;
         final String relativePropertyPath = ExporterUtil.relativizePath(property);
 
-        final List<PredictedTag> predictedTags = PredictedTagsUtil.getPredictedTags(resource, relativePropertyPath);
+        final List<PredictedTag> predictedTags = PredictedTagsUtil.getPredictedTags(resource, relativePropertyPath, lowerConfidenceThreshold);
         if (CollectionUtils.isEmpty(predictedTags)) {
-            return "";
+            return EMPTY_STRING;
         }
 
-        final List<String> predictedTagNames = new ArrayList<>();
-        for (final PredictedTag predictedTagModel : predictedTags) {
-            predictedTagNames.add(predictedTagModel.getName());
+        final List<String> predictedTagRenderedValue = new ArrayList<>();
+        for (final PredictedTag predictedTag : predictedTags) {
+            predictedTagRenderedValue.add(asCellCSVValue(predictedTag));
         }
 
-        return StringUtils.join(predictedTagNames, ";");
+        return StringUtils.join(predictedTagRenderedValue, VALUE_SEPARATOR);
     }
 
+
+    public String asCellCSVValue(PredictedTag predictedTag) {
+        if (predictedTag == null) {
+            return EMPTY_STRING;
+        }
+
+        return predictedTag.getName() +
+                CONFIDENCE_BRACKET_OPEN +
+                predictedTag.getConfidenceAsFormattedString() +
+                CONFIDENCE_BRACKET_CLOSE;
+    }
 }

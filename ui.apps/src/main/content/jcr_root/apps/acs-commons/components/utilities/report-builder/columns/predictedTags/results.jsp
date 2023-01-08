@@ -22,9 +22,9 @@
 <sling2:adaptTo var="predictedTags" adaptable="${slingRequest}" adaptTo="com.adobe.acs.commons.reports.models.PredictedTagsCellValue" />
 <td is="coral-table-cell">
     <ul>
-        <c:forEach var="tag" items="${predictedTags.predictedTags}">
+        <c:forEach var="predictedTag" items="${predictedTags.predictedTags}">
             <li>
-                ${tag.name}
+                ${predictedTag.name} [${predictedTag.confidenceAsFormattedString}]
             </li>
         </c:forEach>
     </ul>
