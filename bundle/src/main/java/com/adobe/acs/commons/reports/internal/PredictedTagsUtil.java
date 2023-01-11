@@ -4,12 +4,17 @@ import com.adobe.acs.commons.reports.models.PredictedTag;
 import com.day.cq.dam.api.Asset;
 import com.day.cq.dam.api.DamConstants;
 import com.day.cq.dam.commons.util.DamUtil;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.jackrabbit.vault.util.PathUtil;
 import org.apache.sling.api.resource.Resource;
+import org.apache.sling.api.resource.ResourceResolver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
 
 public class PredictedTagsUtil {
 
@@ -25,7 +30,7 @@ public class PredictedTagsUtil {
                                                       final String relativePropertyPath,
                                                       final Double lowerConfidenceThreshold) {
 
-        double validatedLowerConfidenceValue = validateLowerConfidenceThreshold(lowerConfidenceThreshold);
+        final double validatedLowerConfidenceValue = validateLowerConfidenceThreshold(lowerConfidenceThreshold);
 
         if (resource == null) {
             LOGGER.error("getPredictedTags : The given resource is null, hence returning empty list.");
@@ -36,7 +41,7 @@ public class PredictedTagsUtil {
             LOGGER.error("getPredictedTags : The given resource could not be resolved to an asset, hence returning empty list.");
             return Collections.emptyList();
         }
-        final Resource predictedTagsResource = getPredictedTagsResource(resource, relativePropertyPath);
+        final Resource predictedTagsResource = getPredictedTagsResource(resource, asset, relativePropertyPath);
         if (predictedTagsResource == null) {
             LOGGER.error("getPredictedTags : Asset contains no predictedTags, hence returning empty list.");
             return Collections.emptyList();
@@ -55,9 +60,9 @@ public class PredictedTagsUtil {
 
         // sort predicted tags by confidence (desc)
         predictedTags.sort((p1, p2) -> {
-            double p1Confidence = p1 != null ? p1.getConfidence() : 0.0;
-            double p2Confidence = p2 != null ? p2.getConfidence() : 0.0;
-            // invert order: elements with highest confidence go first
+            final double p1Confidence = p1 != null ? p1.getConfidence() : MINIMUM_LOWER_CONFIDENCE_THRESHOLD_VALUE;
+            final double p2Confidence = p2 != null ? p2.getConfidence() : MINIMUM_LOWER_CONFIDENCE_THRESHOLD_VALUE;
+            // invert order: elements with the highest confidence go first
             return -Double.compare(p1Confidence, p2Confidence);
         });
 
@@ -66,20 +71,36 @@ public class PredictedTagsUtil {
     }
 
     private static Resource getPredictedTagsResource(final Resource resource,
+                                                     final Asset asset,
                                                      final String relativePropertyPath) {
-        String predictedTagsPath = PathUtil.append(resource.getPath(), relativePropertyPath);
-        Resource predictedTagsResource = resource.getResourceResolver().getResource(predictedTagsPath);
+        if (resource == null || asset == null) {
+            return null;
+        }
+
+        final ResourceResolver resourceResolver = resource.getResourceResolver();
+        String predictedTagsPath;
+        if (StringUtils.isNotBlank(relativePropertyPath)) {
+            predictedTagsPath = PathUtil.append(resource.getPath(), relativePropertyPath);
+        } else {
+            predictedTagsPath = resource.getPath();
+        }
+
+        final Resource predictedTagsResource = resourceResolver.getResource(predictedTagsPath);
         if (predictedTagsResource == null) {
-            // fallback
-            predictedTagsPath = PathUtil.append(resource.getPath(), DamConstants.PREDICTED_TAGS);
-            return resource.getResourceResolver().getResource(predictedTagsPath);
+            // fallback on expected standard path
+            predictedTagsPath = PathUtil.append(asset.getPath(), DamConstants.PREDICTED_TAGS);
+            return resourceResolver.getResource(predictedTagsPath);
         }
         return predictedTagsResource;
     }
 
-    public static double validateLowerConfidenceThreshold(Double lowerConfidenceThresholdValue) {
-        return lowerConfidenceThresholdValue != null ?
+    public static double validateLowerConfidenceThreshold(final Double lowerConfidenceThresholdValue) {
+        return lowerConfidenceThresholdValue != null
+                && !lowerConfidenceThresholdValue.isNaN()
+                && !lowerConfidenceThresholdValue.isInfinite()
+                && lowerConfidenceThresholdValue >= MINIMUM_LOWER_CONFIDENCE_THRESHOLD_VALUE ?
                 lowerConfidenceThresholdValue :
                 MINIMUM_LOWER_CONFIDENCE_THRESHOLD_VALUE;
     }
+
 }
