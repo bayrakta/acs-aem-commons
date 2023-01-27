@@ -54,6 +54,7 @@ public class RedirectRule {
     public static final String EFFECTIVE_FROM_PROPERTY_NAME = "effectiveFrom";
     public static final String NOTE_PROPERTY_NAME = "note";
     public static final String CONTEXT_PREFIX_IGNORED_PROPERTY_NAME = "contextPrefixIgnored";
+    public static final String EVALUATE_URI_PROPERTY_NAME = "evaluateURI";
     public static final String CREATED_PROPERTY_NAME = "jcr:created";
     public static final String CREATED_BY_PROPERTY_NAME = "jcr:createdBy";
     public static final String MODIFIED_PROPERTY_NAME = "jcr:lastModified";
@@ -68,6 +69,9 @@ public class RedirectRule {
 
     @ValueMapValue(injectionStrategy = InjectionStrategy.REQUIRED)
     private int statusCode;
+
+    @ValueMapValue
+    private boolean evaluateURI;
 
     @ValueMapValue
     private Calendar untilDate;
@@ -134,6 +138,10 @@ public class RedirectRule {
         return statusCode;
     }
 
+    public boolean getEvaluateURI() {
+        return evaluateURI;
+    }
+
     public String getCreatedBy() {
         return createdBy;
     }
@@ -190,9 +198,9 @@ public class RedirectRule {
 
     @Override
     public String toString() {
-        return String.format("RedirectRule{source='%s', target='%s', statusCode=%s, untilDate=%s, effectiveFrom=%s, note=%s, "
+        return String.format("RedirectRule{source='%s', target='%s', statusCode=%s, untilDate=%s, effectiveFrom=%s, note=%s, evaluateURI=%s,"
                         + "contextPrefixIgnored=%s, tags=%s, created=%s, createdBy=%s, modified=%s, modifiedBy=%s}",
-                source, target, statusCode, untilDate, effectiveFrom, note, contextPrefixIgnored,
+                source, target, statusCode, untilDate, effectiveFrom, note, evaluateURI, contextPrefixIgnored,
                 Arrays.toString(tagIds), created, createdBy, modified, modifiedBy);
     }
 
@@ -238,16 +246,36 @@ public class RedirectRule {
     }
 
     /**
-     * @return whether the rule has expired, i.e. the 'untileDate' property is before the current time
+     * @return whether the rule has expired, i.e. the 'untilDate' property is before the current time
+     * ----[effectiveFrom]---[now]---[untilDate]--->
+
+     *
+     * @return
      */
-    public boolean isExpired(){
-        return untilDate != null && untilDate.before(Calendar.getInstance());
+    public RedirectState getState(){
+        boolean expired = untilDate != null && untilDate.before(Calendar.getInstance());
+        boolean pending = effectiveFrom != null && Calendar.getInstance().before(effectiveFrom);;
+        boolean invalid = effectiveFrom != null && untilDate != null && effectiveFrom.after(untilDate);
+
+        if (invalid){
+            return RedirectState.INVALID;
+        } else if (expired){
+            return RedirectState.EXPIRED;
+        } else if (pending){
+            return RedirectState.PENDING;
+        } else {
+            return RedirectState.ACTIVE;
+        }
     }
 
     /**
-     * @return whether the rule is active, i.e. the 'effectiveFrom' property is empty or after the current time
+     * @return whether the redirect is published
      */
-    public boolean isActive() {
-        return effectiveFrom == null || Calendar.getInstance().after(effectiveFrom);
+    public boolean isPublished(){
+        Calendar lastReplicated = resource.getParent().getValueMap().get("cq:lastReplicated", Calendar.class);
+        boolean isPublished = lastReplicated != null;
+        boolean modifiedAfterPublication = isPublished
+                && ((modified != null && modified.after(lastReplicated)) || (created != null && created.after(lastReplicated)));
+        return isPublished && !modifiedAfterPublication;
     }
 }
