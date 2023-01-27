@@ -29,12 +29,14 @@ public class PredictedTagReportCellCSVExporter implements ReportCellCSVExporter 
     @Inject @Optional
     private Double lowerConfidenceThreshold;
 
+    private PredictedTagsUtil predictedTagsUtil = new PredictedTagsUtil();
+
     @Override
     public String getValue(final Object result) {
         final Resource resource = (Resource) result;
         final String relativePropertyPath = ExporterUtil.relativizePath(property);
 
-        final List<PredictedTag> predictedTags = PredictedTagsUtil.getPredictedTags(resource, relativePropertyPath, lowerConfidenceThreshold);
+        final List<PredictedTag> predictedTags = predictedTagsUtil.getPredictedTags(resource, relativePropertyPath, lowerConfidenceThreshold);
         if (CollectionUtils.isEmpty(predictedTags)) {
             return EMPTY_STRING;
         }

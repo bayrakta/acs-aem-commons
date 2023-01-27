@@ -27,10 +27,12 @@ public class PredictedTagsCellValue {
     @Inject @Optional
     private Double lowerConfidenceThreshold;
 
+    private PredictedTagsUtil predictedTagsUtil = new PredictedTagsUtil();
+
     public List<PredictedTag> getPredictedTags() {
         final String relativePropertyPath = ExporterUtil.relativizePath(property);
         final Resource resource = (Resource) request.getAttribute("result");
 
-        return PredictedTagsUtil.getPredictedTags(resource, relativePropertyPath, lowerConfidenceThreshold);
+        return predictedTagsUtil.getPredictedTags(resource, relativePropertyPath, lowerConfidenceThreshold);
     }
 }

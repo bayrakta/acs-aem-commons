@@ -22,13 +22,9 @@ public class PredictedTagsUtil {
 
     public static final double MINIMUM_LOWER_CONFIDENCE_THRESHOLD_VALUE = 0.0;
 
-    private PredictedTagsUtil() {
-        throw new IllegalStateException("Utility class");
-    }
-
-    public static List<PredictedTag> getPredictedTags(final Resource resource,
-                                                      final String relativePropertyPath,
-                                                      final Double lowerConfidenceThreshold) {
+    public List<PredictedTag> getPredictedTags(final Resource resource,
+                                               final String relativePropertyPath,
+                                               final Double lowerConfidenceThreshold) {
 
         final double validatedLowerConfidenceValue = validateLowerConfidenceThreshold(lowerConfidenceThreshold);
 
@@ -36,11 +32,13 @@ public class PredictedTagsUtil {
             LOGGER.error("getPredictedTags : The given resource is null, hence returning empty list.");
             return Collections.emptyList();
         }
-        final Asset asset = DamUtil.resolveToAsset(resource);
+
+        final Asset asset = adaptToAsset(resource);
         if (asset == null) {
             LOGGER.error("getPredictedTags : The given resource could not be resolved to an asset, hence returning empty list.");
             return Collections.emptyList();
         }
+
         final Resource predictedTagsResource = getPredictedTagsResource(resource, asset, relativePropertyPath);
         if (predictedTagsResource == null) {
             LOGGER.error("getPredictedTags : Asset contains no predictedTags, hence returning empty list.");
@@ -70,9 +68,20 @@ public class PredictedTagsUtil {
         return predictedTags;
     }
 
-    private static Resource getPredictedTagsResource(final Resource resource,
-                                                     final Asset asset,
-                                                     final String relativePropertyPath) {
+
+    /**
+     * Adapt the resource to an asset. Return null if the resource cannot be resolved to an asset
+     * @param resource the resource
+     * @return the resource as asset. Return null if the resource cannot be resolved to an asset
+     */
+    public Asset adaptToAsset(Resource resource) {
+        return DamUtil.resolveToAsset(resource);
+    }
+
+
+    protected Resource getPredictedTagsResource(final Resource resource,
+                                                final Asset asset,
+                                                final String relativePropertyPath) {
         if (resource == null || asset == null) {
             return null;
         }
