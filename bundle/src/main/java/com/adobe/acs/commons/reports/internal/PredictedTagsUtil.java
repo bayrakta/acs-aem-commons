@@ -33,7 +33,7 @@ public class PredictedTagsUtil {
             return Collections.emptyList();
         }
 
-        final Asset asset = adaptToAsset(resource);
+        final Asset asset = resolveToAsset(resource);
         if (asset == null) {
             LOGGER.error("getPredictedTags : The given resource could not be resolved to an asset, hence returning empty list.");
             return Collections.emptyList();
@@ -70,11 +70,11 @@ public class PredictedTagsUtil {
 
 
     /**
-     * Adapt the resource to an asset. Return null if the resource cannot be resolved to an asset
+     * Resolve the resource to an asset. Return null if the resource cannot be resolved to an asset
      * @param resource the resource
      * @return the resource as asset. Return null if the resource cannot be resolved to an asset
      */
-    public Asset adaptToAsset(Resource resource) {
+    public Asset resolveToAsset(final Resource resource) {
         return DamUtil.resolveToAsset(resource);
     }
 

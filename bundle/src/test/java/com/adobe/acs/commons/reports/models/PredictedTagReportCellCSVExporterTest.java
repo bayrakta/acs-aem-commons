@@ -45,7 +45,7 @@ public class PredictedTagReportCellCSVExporterTest {
         assertNotNull(systemUnderTest);
 
         doReturn(mockResolver).when(mockResource).getResourceResolver();
-        doReturn(mockAsset).when(predictedTagsUtil).adaptToAsset(Mockito.any(Resource.class));
+        doReturn(mockAsset).when(predictedTagsUtil).resolveToAsset(Mockito.any(Resource.class));
 
         doReturn(ASSET_PATH).when(mockResource).getPath();
         doReturn(ASSET_PATH).when(mockAsset).getPath();
