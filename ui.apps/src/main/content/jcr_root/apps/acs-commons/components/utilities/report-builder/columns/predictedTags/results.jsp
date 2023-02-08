@@ -24,7 +24,7 @@
     <ul>
         <c:forEach var="predictedTag" items="${predictedTags.predictedTags}">
             <li>
-                ${predictedTag.name} [${predictedTag.confidenceAsFormattedString}]
+                ${predictedTag.name} [<fmt:formatNumber maxFractionDigits="4" value="${predictedTag.confidence}"/>]
             </li>
         </c:forEach>
     </ul>

@@ -19,15 +19,21 @@ import java.util.List;
 @Model(adaptables = Resource.class)
 public class PredictedTagReportCellCSVExporter implements ReportCellCSVExporter {
 
+    public static final String CONFIDENCE_FORMAT_STRING = "%.4f";
+
     public static final String EMPTY_STRING = "";
     public static final String CONFIDENCE_BRACKET_OPEN = "[";
     public static final String CONFIDENCE_BRACKET_CLOSE = "]";
     public static final String VALUE_SEPARATOR = ";";
+    public static final String SPACE_SEPARATOR = " ";
 
     @Inject
     private String property;
     @Inject @Optional
     private Double lowerConfidenceThreshold;
+
+    @Inject @Optional
+    private boolean showConfidence;
 
     private PredictedTagsUtil predictedTagsUtil = new PredictedTagsUtil();
 
@@ -55,9 +61,13 @@ public class PredictedTagReportCellCSVExporter implements ReportCellCSVExporter 
             return EMPTY_STRING;
         }
 
-        return predictedTag.getName() +
-                CONFIDENCE_BRACKET_OPEN +
-                predictedTag.getConfidenceAsFormattedString() +
-                CONFIDENCE_BRACKET_CLOSE;
+        StringBuilder result = new StringBuilder(predictedTag.getName());
+        if (showConfidence) {
+            result.append(SPACE_SEPARATOR);
+            result.append(CONFIDENCE_BRACKET_OPEN);
+            result.append(String.format(CONFIDENCE_FORMAT_STRING, predictedTag.getConfidence()));
+            result.append(CONFIDENCE_BRACKET_CLOSE);
+        }
+        return result.toString();
     }
 }

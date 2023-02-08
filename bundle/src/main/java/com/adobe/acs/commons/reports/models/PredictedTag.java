@@ -11,7 +11,6 @@ import javax.inject.Inject;
 @Model(adaptables = Resource.class)
 public class PredictedTag {
 
-    private static final String CONFIDENCE_FORMAT_STRING = "%.4f";
 
     @Inject
     private String name;
@@ -28,10 +27,6 @@ public class PredictedTag {
         return confidence;
     }
 
-    public String getConfidenceAsFormattedString() {
-        return String.format(CONFIDENCE_FORMAT_STRING, confidence);
-    }
-
     public Boolean getCustom() {
         return isCustom;
     }
@@ -44,5 +39,4 @@ public class PredictedTag {
                 "custom=" + isCustom +
                 '}';
     }
-
 }

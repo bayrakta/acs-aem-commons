@@ -45,6 +45,15 @@
                             sling:resourceType="granite/ui/components/coral/foundation/form/hidden"
                             name="./lowerConfidenceThreshold@TypeHint"
                             value="Double"/>
+                    <showConfidence
+                            jcr:primaryType="nt:unstructured"
+                            sling:resourceType="granite/ui/components/coral/foundation/form/checkbox"
+                            checked="{Boolean}false"
+                            fieldDescription="If selected, display the confidence"
+                            name="./showConfidence"
+                            text="Show confidence"
+                            uncheckedValue="{Boolean}false"
+                            value="{Boolean}true"/>
                     <exporter
                             jcr:primaryType="nt:unstructured"
                             sling:resourceType="granite/ui/components/foundation/form/hidden"
