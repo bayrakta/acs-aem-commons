@@ -15,7 +15,8 @@ import org.mockito.Spy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.MockitoAnnotations.initMocks;
 
@@ -86,7 +87,7 @@ public class PredictedTagReportCellCSVExporterTest {
 
     @Test
     public void testPropertyHasTags() throws IllegalAccessException {
-        LOGGER.info("testFetchProperty");
+        LOGGER.info("testPropertyHasTags");
 
         String predictedPath = ASSET_PATH + "/" + PREDICTED_TAGS_PROPERTY_PATH;
         doReturn(predictedTagsParentResource).when(mockResolver).getResource(predictedPath);
@@ -108,5 +109,64 @@ public class PredictedTagReportCellCSVExporterTest {
         String expectedValue = TAG2_NAME + ";" + TAG1_NAME;
         assertEquals(expectedValue, systemUnderTest.getValue(mockResource));
         LOGGER.info("Test successful!");
+    }
+
+    @Test
+    public void testShowConfidence() throws IllegalAccessException {
+        LOGGER.info("testShowConfidence");
+
+        String predictedPath = ASSET_PATH + "/" + PREDICTED_TAGS_PROPERTY_PATH;
+        doReturn(predictedTagsParentResource).when(mockResolver).getResource(predictedPath);
+        doReturn(ImmutableList.of(predictedTag1Resource, predictedTag2Resource)).when(predictedTagsParentResource).getChildren();
+        doReturn(predictedTag1).when(predictedTag1Resource).adaptTo(PredictedTag.class);
+        doReturn(predictedTag2).when(predictedTag2Resource).adaptTo(PredictedTag.class);
+
+        doReturn(TAG1_NAME).when(predictedTag1).getName();
+        doReturn(TAG1_CONFIDENCE).when(predictedTag1).getConfidence();
+        doReturn(TAG1_IS_CUSTOM).when(predictedTag1).isCustom();
+
+        doReturn(TAG2_NAME).when(predictedTag2).getName();
+        doReturn(TAG2_CONFIDENCE).when(predictedTag2).getConfidence();
+        doReturn(TAG2_IS_CUSTOM).when(predictedTag2).isCustom();
+
+        FieldUtils.writeField(systemUnderTest, "property", PREDICTED_TAGS_PROPERTY_PATH, true);
+        FieldUtils.writeField(systemUnderTest, "confidenceShown", true, true);
+
+        // Expect tag2 to be first, as it has a higher confidence
+        String expectedValue = TAG2_NAME + " [" + confidenceAsString(TAG2_CONFIDENCE) + "];" + TAG1_NAME + " [" + confidenceAsString(TAG1_CONFIDENCE) + "]";
+        assertEquals(expectedValue, systemUnderTest.getValue(mockResource));
+        LOGGER.info("Test successful!");
+    }
+
+    @Test
+    public void testFilterTags() throws IllegalAccessException {
+        LOGGER.info("testFilterTags");
+
+        String predictedPath = ASSET_PATH + "/" + PREDICTED_TAGS_PROPERTY_PATH;
+        doReturn(predictedTagsParentResource).when(mockResolver).getResource(predictedPath);
+        doReturn(ImmutableList.of(predictedTag1Resource, predictedTag2Resource)).when(predictedTagsParentResource).getChildren();
+        doReturn(predictedTag1).when(predictedTag1Resource).adaptTo(PredictedTag.class);
+        doReturn(predictedTag2).when(predictedTag2Resource).adaptTo(PredictedTag.class);
+
+        doReturn(TAG1_NAME).when(predictedTag1).getName();
+        doReturn(TAG1_CONFIDENCE).when(predictedTag1).getConfidence();
+        doReturn(TAG1_IS_CUSTOM).when(predictedTag1).isCustom();
+
+        doReturn(TAG2_NAME).when(predictedTag2).getName();
+        doReturn(TAG2_CONFIDENCE).when(predictedTag2).getConfidence();
+        doReturn(TAG2_IS_CUSTOM).when(predictedTag2).isCustom();
+
+        FieldUtils.writeField(systemUnderTest, "property", PREDICTED_TAGS_PROPERTY_PATH, true);
+        FieldUtils.writeField(systemUnderTest, "confidenceShown", true, true);
+        FieldUtils.writeField(systemUnderTest, "lowerConfidenceThreshold", 0.65, true);
+
+        // Expect only tag2, as tag1 is filtered
+        String expectedValue = TAG2_NAME + " [" + confidenceAsString(TAG2_CONFIDENCE) + "]";
+        assertEquals(expectedValue, systemUnderTest.getValue(mockResource));
+        LOGGER.info("Test successful!");
+    }
+
+    protected String confidenceAsString(double confidenceValue) {
+        return String.format("%.4f", confidenceValue);
     }
 }
