@@ -103,7 +103,12 @@ public class PredictedTagsUtil {
         return predictedTagsResource;
     }
 
-    public static double validateLowerConfidenceThreshold(final Double lowerConfidenceThresholdValue) {
+    /**
+     * Validate and return lower confidence threshold. Value must be a double and not less than 0.0
+     * @param lowerConfidenceThresholdValue the input threshold value
+     * @return the validated lower confidence threshold
+     */
+    protected double validateLowerConfidenceThreshold(final Double lowerConfidenceThresholdValue) {
         return lowerConfidenceThresholdValue != null
                 && !lowerConfidenceThresholdValue.isNaN()
                 && !lowerConfidenceThresholdValue.isInfinite()
@@ -111,5 +116,4 @@ public class PredictedTagsUtil {
                 lowerConfidenceThresholdValue :
                 MINIMUM_LOWER_CONFIDENCE_THRESHOLD_VALUE;
     }
-
 }
