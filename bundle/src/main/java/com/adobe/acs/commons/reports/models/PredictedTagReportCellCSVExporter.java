@@ -33,7 +33,7 @@ public class PredictedTagReportCellCSVExporter implements ReportCellCSVExporter 
     private Double lowerConfidenceThreshold;
 
     @Inject @Optional
-    private boolean showConfidence;
+    private boolean confidenceShown;
 
     private PredictedTagsUtil predictedTagsUtil = new PredictedTagsUtil();
 
@@ -62,7 +62,7 @@ public class PredictedTagReportCellCSVExporter implements ReportCellCSVExporter 
         }
 
         StringBuilder result = new StringBuilder(predictedTag.getName());
-        if (showConfidence) {
+        if (confidenceShown) {
             result.append(SPACE_SEPARATOR);
             result.append(CONFIDENCE_BRACKET_OPEN);
             result.append(String.format(CONFIDENCE_FORMAT_STRING, predictedTag.getConfidence()));

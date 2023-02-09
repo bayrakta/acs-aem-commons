@@ -2,7 +2,7 @@
   #%L
   ACS AEM Commons Package
   %%
-  Copyright (C) 2017 Adobe
+  Copyright (C) 2023 Adobe
   %%
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -19,12 +19,15 @@
   --%>
 <%@include file="/libs/foundation/global.jsp" %>
 <%@taglib prefix="sling2" uri="http://sling.apache.org/taglibs/sling" %>
-<sling2:adaptTo var="predictedTags" adaptable="${slingRequest}" adaptTo="com.adobe.acs.commons.reports.models.PredictedTagsCellValue" />
+<sling2:adaptTo var="predictedTagsCellValue" adaptable="${slingRequest}" adaptTo="com.adobe.acs.commons.reports.models.PredictedTagsCellValue" />
 <td is="coral-table-cell">
     <ul>
-        <c:forEach var="predictedTag" items="${predictedTags.predictedTags}">
+        <c:forEach var="predictedTag" items="${predictedTagsCellValue.predictedTags}">
             <li>
-                ${predictedTag.name} [<fmt:formatNumber maxFractionDigits="4" value="${predictedTag.confidence}"/>]
+                ${predictedTag.name}
+                <c:if test="${predictedTagsCellValue.confidenceShown}">
+                    [<fmt:formatNumber maxFractionDigits="4" value="${predictedTag.confidence}"/>]
+                </c:if>
             </li>
         </c:forEach>
     </ul>

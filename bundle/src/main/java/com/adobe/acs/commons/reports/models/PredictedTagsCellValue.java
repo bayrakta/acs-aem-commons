@@ -13,7 +13,7 @@ import javax.inject.Inject;
 import java.util.List;
 
 /**
- * Model for rendering the predicted tags for a report item.
+ * Model used for rendering a predicted tag as a report entry (a "cell")
  */
 @Model(adaptables = SlingHttpServletRequest.class)
 public class PredictedTagsCellValue {
@@ -27,6 +27,9 @@ public class PredictedTagsCellValue {
     @Inject @Optional
     private Double lowerConfidenceThreshold;
 
+    @Inject @Optional
+    private boolean confidenceShown;
+
     private PredictedTagsUtil predictedTagsUtil = new PredictedTagsUtil();
 
     public List<PredictedTag> getPredictedTags() {
@@ -34,5 +37,9 @@ public class PredictedTagsCellValue {
         final Resource resource = (Resource) request.getAttribute("result");
 
         return predictedTagsUtil.getPredictedTags(resource, relativePropertyPath, lowerConfidenceThreshold);
+    }
+
+    public boolean isConfidenceShown() {
+        return confidenceShown;
     }
 }

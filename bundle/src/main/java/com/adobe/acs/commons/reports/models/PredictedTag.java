@@ -6,11 +6,10 @@ import org.apache.sling.models.annotations.Model;
 import javax.inject.Inject;
 
 /**
- * Model for rendering PredictedTag properties to CSV cells.
+ * Model for rendering PredictedTag properties
  */
 @Model(adaptables = Resource.class)
 public class PredictedTag {
-
 
     @Inject
     private String name;

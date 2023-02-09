@@ -28,11 +28,20 @@
                             name="./property"
                             required="{Boolean}true"
                             emptyText="e.g., jcr:content/metadata/predictedTags"/>
+                    <showConfidence
+                            jcr:primaryType="nt:unstructured"
+                            sling:resourceType="granite/ui/components/coral/foundation/form/checkbox"
+                            checked="{Boolean}false"
+                            fieldDescription="If selected, display the confidence (value between 0.0 and 1.0) [in square brackets]"
+                            name="./confidenceShown"
+                            text="Show confidence"
+                            uncheckedValue="{Boolean}false"
+                            value="{Boolean}true"/>
                     <lowerConfidenceThreshold
                             jcr:primaryType="nt:unstructured"
                             sling:resourceType="granite/ui/components/coral/foundation/form/numberfield"
                             fieldLabel="Lower Confidence Threshold"
-                            fieldDescription="Omit all predicted tags whose confidence is lower than this value"
+                            fieldDescription="Omit all predicted tags whose confidence is lower than this value. 0 implies no filtering"
                             name="./lowerConfidenceThreshold"
                             value="{Double}0.0"
                             min="{Double}0.0"
@@ -45,15 +54,6 @@
                             sling:resourceType="granite/ui/components/coral/foundation/form/hidden"
                             name="./lowerConfidenceThreshold@TypeHint"
                             value="Double"/>
-                    <showConfidence
-                            jcr:primaryType="nt:unstructured"
-                            sling:resourceType="granite/ui/components/coral/foundation/form/checkbox"
-                            checked="{Boolean}false"
-                            fieldDescription="If selected, display the confidence"
-                            name="./showConfidence"
-                            text="Show confidence"
-                            uncheckedValue="{Boolean}false"
-                            value="{Boolean}true"/>
                     <exporter
                             jcr:primaryType="nt:unstructured"
                             sling:resourceType="granite/ui/components/foundation/form/hidden"
