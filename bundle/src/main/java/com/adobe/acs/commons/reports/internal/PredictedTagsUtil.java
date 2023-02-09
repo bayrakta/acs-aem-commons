@@ -4,6 +4,7 @@ import com.adobe.acs.commons.reports.models.PredictedTag;
 import com.day.cq.dam.api.Asset;
 import com.day.cq.dam.api.DamConstants;
 import com.day.cq.dam.commons.util.DamUtil;
+import com.google.common.collect.ImmutableList;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jackrabbit.vault.util.PathUtil;
 import org.apache.sling.api.resource.Resource;
@@ -11,10 +12,7 @@ import org.apache.sling.api.resource.ResourceResolver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 public class PredictedTagsUtil {
 
@@ -35,39 +33,44 @@ public class PredictedTagsUtil {
 
         final Asset asset = resolveToAsset(resource);
         if (asset == null) {
-            LOGGER.error("getPredictedTags : The given resource could not be resolved to an asset, hence returning empty list.");
+            LOGGER.warn("getPredictedTags : The given resource could not be resolved to an asset, hence returning empty list.");
             return Collections.emptyList();
         }
 
         final Resource predictedTagsResource = getPredictedTagsResource(resource, asset, relativePropertyPath);
         if (predictedTagsResource == null) {
-            LOGGER.error("getPredictedTags : Asset contains no predictedTags, hence returning empty list.");
+            LOGGER.info("getPredictedTags : No predicted tags found at the property path, hence returning empty list.");
             return Collections.emptyList();
         }
 
-        final Iterable<Resource> predicateTagResourcesIterable = predictedTagsResource.getChildren();
-        final Iterator<Resource> predicateTagResourcesIterator = predicateTagResourcesIterable.iterator();
+        final List<Resource> predictedTagResources = ImmutableList.copyOf(predictedTagsResource.getChildren());
         final List<PredictedTag> predictedTags = new ArrayList<>();
-        while (predicateTagResourcesIterator.hasNext()) {
-            final Resource predicateTagResource = predicateTagResourcesIterator.next();
-            final PredictedTag predictedTag = predicateTagResource.adaptTo(PredictedTag.class);
+        for (final Resource predictedTagResource : predictedTagResources) {
+            final PredictedTag predictedTag = predictedTagResource.adaptTo(PredictedTag.class);
             if (predictedTag != null && (predictedTag.getConfidence() >= validatedLowerConfidenceValue)) {
                 predictedTags.add(predictedTag);
             }
         }
 
-        // sort predicted tags by confidence (desc)
-        predictedTags.sort((p1, p2) -> {
+        sortByConfidence(predictedTags);
+
+        LOGGER.debug("getPredictedTags : Loaded predictedTags {}.", predictedTagResources);
+        return predictedTags;
+    }
+
+
+    /**
+     * Sort the list of predicted tag sorted by confidence
+     * @param tagList
+     */
+    protected void sortByConfidence(final List<PredictedTag> tagList) {
+        tagList.sort((p1, p2) -> {
             final double p1Confidence = p1 != null ? p1.getConfidence() : MINIMUM_LOWER_CONFIDENCE_THRESHOLD_VALUE;
             final double p2Confidence = p2 != null ? p2.getConfidence() : MINIMUM_LOWER_CONFIDENCE_THRESHOLD_VALUE;
             // invert order: elements with the highest confidence go first
             return -Double.compare(p1Confidence, p2Confidence);
         });
-
-        LOGGER.debug("getPredictedTags : Loaded predictedTags {}.", predictedTags);
-        return predictedTags;
     }
-
 
     /**
      * Resolve the resource to an asset. Return null if the resource cannot be resolved to an asset

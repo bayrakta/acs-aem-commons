@@ -26,7 +26,7 @@ public class PredictedTag {
         return confidence;
     }
 
-    public Boolean getCustom() {
+    public Boolean isCustom() {
         return isCustom;
     }
 
